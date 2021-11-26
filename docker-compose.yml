@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+    jenkins:
+        container_name: jenkins-1
+        build:
+            dockerfile: Dockerfile
+            context: .
+        restart: always
+        networks:
+            - traefik-reverseproxy
+        labels:
+            - 'traefik.enable=true'
+            - 'traefik.http.routers.jenkins-local.rule=Host(`jenkins.fabsi.fritz.box`)'
+            - 'traefik.http.routers.jenkins-local.entrypoints=web'
+            - 'traefik.http.routers.jenkins-global.rule=Host(`jenkins.penc.selfhost.eu`)'
+            - 'traefik.http.routers.jenkins-global.entrypoints=web'
+        privileged: true
+        user: root
+        environment:
+            - JENKINS_OPTS="--httpPort=80"
+        volumes:
+            - ./data:/var/jenkins_home
+            - //var/run/docker.sock:/var/run/docker.sock
+        expose:
+            - '80'
+        ports:
+            - '50000:50000'
+
+networks:
+    traefik-reverseproxy:
+        external: true
